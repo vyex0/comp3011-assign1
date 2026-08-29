@@ -1,4 +1,6 @@
-/.metadata/
+.metadata/
 
 # personal
 plan.md
+.DS_Store
+*.yaml
