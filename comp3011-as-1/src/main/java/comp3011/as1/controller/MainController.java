@@ -1,14 +1,17 @@
 package comp3011.as1.controller;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-@RestController
+@RequestMapping("/api")
+@Controller
 public class MainController {
 	
-	// GET methods for Pages
+	// GET method for Index
 	@GetMapping("/")
 	public String index() {
-		return "Index";
+		return "index";
 	}
+	
 }

@@ -18,7 +18,7 @@ public class TokenStatsService {
 		outputTokens.addAndGet(amount);
 	}
 	
-	// GET methods
+	// Get methods
 	public long getInputTokens() {
 		return inputTokens.get();
 	}

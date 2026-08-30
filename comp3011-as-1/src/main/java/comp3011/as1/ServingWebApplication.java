@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Bean;
 import java.time.Instant;
 
 @SpringBootApplication
-public class MainApplication {
+public class ServingWebApplication {
 	
 	public static void main(String[] args) {
-		SpringApplication.run(MainApplication.class, args);
+		SpringApplication.run(ServingWebApplication.class, args);
 	}
 	
 	@Bean

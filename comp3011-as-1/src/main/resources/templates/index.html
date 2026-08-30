@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<head> 
+    <title>COMP3011 A1</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" th:href="@{/styles.css}" href="/styles.css" />
+</head>
+<body>
+	<div class="header">
+		<h1>Speech to Text Service</h1>            
+	</div>
+	
+	<div class="container">
+		
+		<!-- Recording Section -->
+		<div class="container">
+			<button onclick="startRecording()">Start Recording</button>
+			<button onclick="stopRecording()">Stop Recording</button>
+		</div>
+		
+		<!-- Result Section -->
+		<div class="container">
+					
+		</div>
+	</div>
+	
+	<script th:src="@{/script.js}"></script>
+</body>
+</html>
