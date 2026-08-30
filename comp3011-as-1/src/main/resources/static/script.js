@@ -15,11 +15,18 @@ async function startRecording () {
 		audioChunks.push(event.data);
 	};
 	
-	recorder.onstop = function() {
+	recorder.onstop = async function() {
 		const audioBlob = new Blob(audioChunks);
 		
-		console.log("Finished Recording");
-		console.log(audioBlob);
+		const formData = new FormData();
+		formData.append("audio", audioBlob, "userRecording.webm");
+	
+		const response = await fetch("/api/stt", {
+			method: "POST",
+			body: formData
+		});
+		
+		console.log(response);
 	};
 	
 	recorder.start();

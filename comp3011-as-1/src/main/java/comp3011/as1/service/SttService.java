@@ -1,38 +1,47 @@
 package comp3011.as1.service;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClient;
+
+import java.io.IOException;
+
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 
 import comp3011.as1.dto.TranscriptionResponse;
 
-@Configuration
+@Service
 public class SttService {
 	
-	// Initialize the OpenAI's API
-	@Bean
-	RestClient restClient () {
-		return RestClient.builder()
-				.baseUrl("https://api.openai.com")
-				.defaultHeader("Authorization", "Bearer " + System.getenv("OPENAI_API_KEY"))
-				.build();
-	}
+	private final RestClient restClient;
 	
-	// GET response from OpenAI to check connection
-//	@Bean
-//	CommandLineRunner pingOpenAi (RestClient restClient) {
-//		return args -> {
-//			String response = restClient.get()
-//					.uri("/v1/models")
-//					.retrieve()
-//					.body(String.class);
-//			
-//			System.out.println("OpenAI response:" + response);
-//		};
-//	}
+	public SttService (RestClient restClient) {
+		this.restClient = restClient;
+	};
 	
-	public TranscriptionResponse transcribe (MultipartFile audio) {
-		return new TranscriptionResponse("String");
+	// Receives the Multipart Audio and transcribe it using the OpenAI model
+	public TranscriptionResponse transcribe (MultipartFile audio) throws IOException {
+		MultipartBodyBuilder builder = new MultipartBodyBuilder();
+		builder.part("model", "gpt-4o-mini-transcribe"); // Uses the gpt-4o-mini-transcribe model
+		
+		String filename = audio.getOriginalFilename();
+		byte[] audioBytes = audio.getBytes();
+		ByteArrayResource audioResource = new ByteArrayResource(audioBytes);
+		
+		builder.part("file", audioResource)
+			   .filename(filename);
+		
+		TranscriptionResponse response = restClient.post()
+				.uri("/v1/audio/transcriptions")
+				.contentType(MediaType.MULTIPART_FORM_DATA)
+				.body(builder.build())
+				.retrieve()
+				.body(TranscriptionResponse.class);
+		
+		return response;
 	}
 }
