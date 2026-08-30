@@ -1,5 +1,9 @@
 package comp3011.as1.dto;
 
-public class ErrorResponse {
-
-}
+public record ErrorResponse (
+		String timeStamp,
+		int status,
+		String error,
+		String message,
+		String path
+) {}

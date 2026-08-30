@@ -18,16 +18,16 @@ public class OpenAPIConfig {
 	}
 	
 	// GET response from OpenAI to check connection
-//	@Bean
-//	CommandLineRunner pingOpenAi (RestClient restClient) {
-//		return args -> {
-//			String response = restClient.get()
-//					.uri("/v1/models")
-//					.retrieve()
-//					.body(String.class);
-//			
-//			System.out.println("OpenAI response:" + response);
-//		};
-//	}
+	@Bean
+	CommandLineRunner pingOpenAi (RestClient restClient) {
+		return args -> {
+			String response = restClient.get()
+					.uri("/v1/models")
+					.retrieve()
+					.body(String.class);
+			
+			System.out.println("OpenAI response:" + response);
+		};
+	}
 	
 }

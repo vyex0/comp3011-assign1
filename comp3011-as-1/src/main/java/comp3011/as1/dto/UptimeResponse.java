@@ -1,6 +1,5 @@
 package comp3011.as1.dto;
 
-import java.util.Objects;
 import java.time.*;
 
 public class UptimeResponse {
