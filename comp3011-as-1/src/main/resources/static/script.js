@@ -16,6 +16,9 @@ async function startRecording () {
 	};
 	
 	recorder.onstop = async function() {
+		document.getElementById("status").textContent = "Processing...";
+		
+		// Backend for Recording the Audio
 		const audioBlob = new Blob(audioChunks);
 		
 		const formData = new FormData();
@@ -26,19 +29,20 @@ async function startRecording () {
 			body: formData
 		});
 		
-		console.log(response);
+		const data = await response.json();
+		
+		document.getElementById("transcription").textContent = data.text;
+		document.getElementById("status").textContent = "Not recording";
 	};
 	
 	recorder.start();
-	
-	console.log("Recording...");
+	document.getElementById("status").textContent = "Recording...";
 }
 
 function stopRecording () {
 	recorder.stop();
-	
 	stream.getTracks().forEach(track => track.stop());
 	
-	console.log("Stopped Recording");
+	document.getElementById("status").textContent = "Stopped, transcribing...";
 };
 

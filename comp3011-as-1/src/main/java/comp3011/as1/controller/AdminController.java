@@ -22,7 +22,7 @@ public class AdminController {
 	private final TokenStatsService tokenStatsService;
 	
 	public AdminController (Instant serverStartTime, ConfigurableApplicationContext context, 
-						   TokenStatsService tokenStatsService) {
+						    TokenStatsService tokenStatsService) {
 		this.serverStartTime = serverStartTime;
 		this.context = context;
 		this.tokenStatsService = tokenStatsService; 
