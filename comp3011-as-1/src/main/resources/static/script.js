@@ -8,7 +8,7 @@ async function startRecording () {
 		audio:true
 	});
 	
-	recorder = new MediaRecorder(stream);
+	recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
 	audioChunks = [];
 	
 	recorder.ondataavailable = function(event) {
@@ -19,7 +19,7 @@ async function startRecording () {
 		document.getElementById("status").textContent = "Processing...";
 		
 		// Backend for Recording the Audio
-		const audioBlob = new Blob(audioChunks);
+		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 		
 		const formData = new FormData();
 		formData.append("audio", audioBlob, "userRecording.webm");

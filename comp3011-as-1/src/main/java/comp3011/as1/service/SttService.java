@@ -46,9 +46,6 @@ public class SttService {
 				.retrieve()
 				.body(TranscriptionResponse.class);
 		
-		System.out.println("Parsed usage - input: " + response.usage().openAI_inputTokens()
-                + ", output: " + response.usage().openAI_outputTokens());
-		
 		this.tokenStatsService.addInputTokens(response.usage().openAI_inputTokens());
 		this.tokenStatsService.addOutputTokens(response.usage().openAI_outputTokens());
 		
