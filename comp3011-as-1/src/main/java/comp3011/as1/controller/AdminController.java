@@ -11,42 +11,47 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import comp3011.as1.dto.ErrorResponse;
 import comp3011.as1.dto.GlobalStatsResponse;
 import comp3011.as1.dto.ShutdownResponse;
 import comp3011.as1.dto.UptimeResponse;
+import comp3011.as1.service.ServerClockService;
+import comp3011.as1.service.ShutdownStateService;
 import comp3011.as1.service.TokenStatsService;
 
 @RestController
 @RequestMapping("/api")
 public class AdminController {
 	private final ConfigurableApplicationContext context; // Context 
-	private Instant serverStartTime = null; // Start Time of the Server
 	
+	// Services
 	private final TokenStatsService tokenStatsService;
+	private final ShutdownStateService shutdownStateService;
+	private final ServerClockService serverClockService;
 	
-	public AdminController (Instant serverStartTime, ConfigurableApplicationContext context, 
-						    TokenStatsService tokenStatsService) {
-		this.serverStartTime = serverStartTime;
+	public AdminController (ServerClockService serverClockService, ConfigurableApplicationContext context, 
+						    TokenStatsService tokenStatsService, ShutdownStateService shutdownStateService) {
+		this.serverClockService = serverClockService;
 		this.context = context;
-		this.tokenStatsService = tokenStatsService; 
+		this.tokenStatsService = tokenStatsService;
+		this.shutdownStateService = shutdownStateService;
 	}
 	
 	// GET methods for each of the specified PATHS from YAML
 	@GetMapping("/v1/admin/uptime")	
 	public ResponseEntity<UptimeResponse> getUptime() {
+		Instant start = serverClockService.getStartTime();
 		Instant utcNow = Instant.now();
-		double seconds = Duration.between(serverStartTime, utcNow).toMillis() / 1000.0;
+		double seconds = Duration.between(start, utcNow).toMillis() / 1000.0;
 		
 		UptimeResponse response = new UptimeResponse(
-				serverStartTime.toString(),
+				start.toString(),
 				utcNow.toString(),
 				seconds
 		);
 
-		// returns "200"
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(response);
+		// 200: standard success response which matches the YAML specs
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping("/v1/global/stats")
@@ -64,24 +69,37 @@ public class AdminController {
 	
 	// POST methods for specified PATHS from YAML
 	@PostMapping("/v1/admin/shutdown")
-	public ResponseEntity<ShutdownResponse> shutdown() {
+	public ResponseEntity<?> shutdown() {
+		
+		// Rejects a second/concurrent shutdown request with 409 per
+		// the YAML spec.
+		if (!shutdownStateService.tryBeginShutdown()) {
+			ErrorResponse error = new ErrorResponse(
+					Instant.now().toString(),
+					409,
+					"Conflict",
+					"Graceful shutdown is already in progress.",
+					"/api/v1/admin/shutdown"
+					);
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+		};
+		
 		ShutdownResponse response = new ShutdownResponse("Graceful shutdown requested.");
 
-		// Thread is used to delay the shutdown process so that response can 
-		// safely be delivered first before the context is shut down.
+		// Context is closed on a separate thread after a short delay because
+		// the process could terminate before the method's own HTTP response has
+		// finished being sent back to the user.
 		new Thread(() -> {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
-			
 			context.close();
 		}).start();
 		
-		// returns "202"
-		return ResponseEntity
-				.status(HttpStatus.ACCEPTED)
-				.body(response);
+		// 202: request is accepted and shutdown process is in progress
+		// but not yet completed which matches the YAML's specs.
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
 }

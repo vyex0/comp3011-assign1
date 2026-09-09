@@ -22,6 +22,7 @@ public class ConcurrencyLoadTest {
 	@LocalServerPort
     private int port;
 	
+	@Test
 	void handles200ConcurrentUptimeRequests() throws Exception {
 		TestRestTemplate restTemplate = new TestRestTemplate();
         String url = "http://localhost:" + port + "/api/v1/admin/uptime";
