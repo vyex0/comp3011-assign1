@@ -1,10 +1,143 @@
-.recording {
-    background-color: #ff4444;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+	min-height: 100vh;
+	display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background: linear-gradient(
+        135deg,
+        #eaf3fb 0%,
+        #dceefc 50%,
+        #eef7f3 100%
+    );
+
+    padding: 40px 20px;
+}
+
+/* Header */
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.8rem;
+    color: #222;
+}
+
+
+/* Main Container */
+/* Outer container */
+body > .container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+
+/* Inner Sections */
+
+body > .container > .container {
+    background: #ffffff;
+    border-radius: 20px;
+
+    padding: 28px;
+
+    margin-bottom: 20px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+
+/* Status */
+
+#status {
+    text-align: center;
+    color: #555;
+    margin-bottom: 18px;
+    font-weight: 500;
+}
+
+
+/* Buttons */
+
+button {
+    display: block;
+    width: 100%;
+
+    padding: 14px;
+    margin-bottom: 12px;
+
+    border: none;
+    border-radius: 10px;
+
+    font-size: 1rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        transform 0.1s ease;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+
+/* Start Recording */
+
+button:first-of-type {
+    background: #1a1a1a;
     color: white;
-    animation: pulse 1s infinite;
-  }
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.6; }
-    100% { opacity: 1; }
-  }
+}
+
+button:first-of-type:hover {
+    background: #333;
+}
+
+
+/* Stop Recording */
+
+button:last-of-type {
+    background: #f0f0f0;
+    color: #1a1a1a;
+}
+
+button:last-of-type:hover {
+    background: #e2e2e2;
+}
+
+
+/* Result Section */
+
+h3 {
+    margin-bottom: 12px;
+
+    font-size: 1rem;
+    color: #333;
+}
+
+
+#transcription {
+    color: #444;
+
+    line-height: 1.6;
+
+    white-space: pre-wrap;
+
+    overflow-wrap: break-word;
+    word-break: break-word;
+
+    min-height: 20px;
+}

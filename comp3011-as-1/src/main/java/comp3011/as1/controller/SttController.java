@@ -12,16 +12,17 @@ import comp3011.as1.dto.TranscriptionResponse;
 import comp3011.as1.service.SttService;
 
 @RestController
-@RequestMapping("/api")
 public class SttController {
 	
+	// Delegates the OpenAI call to SttService
 	private final SttService sttService;
 	
 	public SttController (SttService sttService) {
 		this.sttService = sttService;
 	}
 	
-	// POST method for using the OpenAI transcribe service
+	// Receives the recorded audio file from the browser and return its transcription
+	// and its OpenAI token usage. 
 	@PostMapping("/stt")	
 	public TranscriptionResponse transcribe(
 			@RequestParam("audio") MultipartFile audio) throws IOException {

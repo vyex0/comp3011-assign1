@@ -7,11 +7,14 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class OpenAIConfig {
 	
-	// Initialize the OpenAI's API
+	// Initializes the OpenAI API client used for transcription endpoint.
 	@Bean
 	RestClient restClient () {
 		return RestClient.builder()
 				.baseUrl("https://api.openai.com")
+				
+				// Reads OPENAI_API_KEY environment variable once at startup and attaches
+				// it as a bearer token to every request.
 				.defaultHeader(
 						"Authorization", 
 						"Bearer " + System.getenv("OPENAI_API_KEY")
