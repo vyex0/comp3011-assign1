@@ -10,6 +10,7 @@ public class TokenStatsService {
 	private final AtomicLong inputTokens = new AtomicLong(0);
 	private final AtomicLong outputTokens = new AtomicLong(0);
 	
+	// Addition methods
 	public void addInputTokens(long amount) {
 		inputTokens.addAndGet(amount);
 	}
@@ -18,7 +19,7 @@ public class TokenStatsService {
 		outputTokens.addAndGet(amount);
 	}
 	
-	// Get methods
+	// GET methods
 	public long getInputTokens() {
 		return inputTokens.get();
 	}

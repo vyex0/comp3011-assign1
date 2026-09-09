@@ -14,9 +14,6 @@ import java.time.Instant;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
-	// Handles specific failure: client request missing a required
-	// field (e.g., /stt called with no audio file uploaded).
-	
 	@ExceptionHandler(Exception.class)
 	public  ResponseEntity<ErrorResponse> handleException(Exception ex, WebRequest request) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
