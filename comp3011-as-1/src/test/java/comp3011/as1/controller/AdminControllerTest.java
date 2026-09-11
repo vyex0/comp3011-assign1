@@ -30,6 +30,7 @@ public class AdminControllerTest {
     @MockitoBean
     private ShutdownStateService shutdownStateService;
     
+    // Uptime Endpoint
     @Test
     void uptimeReturns500WhenServerClockFails() throws Exception {
     	when(serverClockService.getStartTime())
