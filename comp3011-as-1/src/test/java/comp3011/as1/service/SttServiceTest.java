@@ -74,27 +74,30 @@ public class SttServiceTest {
     	appender.start();
     	sttLogger.addAppender(appender);
     	
-    	// Ensures that the endpoint called returns the fakeJSON.
-    	mockServer.expect(requestTo("https://api.openai.com/v1/audio/transcriptions"))
-    		.andExpect(method(HttpMethod.POST))
-    		.andRespond(withSuccess(fakeJson, MediaType.APPLICATION_JSON));
-    	
-    	sttService.transcribe(fakeAudio);
-    	
-    	// appender contains all the logs that was captured and lets us process
-    	// the request. We check whether the logs contain the input & output needed.
-    	boolean loggedSuccess = appender.list.stream()
-    			.anyMatch(event -> event.getFormattedMessage().contains("inputTokens=10")
-    					&& event.getFormattedMessage().contains("outputTokens=5"));
-    	assertTrue(loggedSuccess, "Expected a log entry recording token usage on success");
-    		
-    	// Ensures the mock server receives the request. It would fail
-        // if SttService never called the RestClient.
-        mockServer.verify();
-        
-    	// Detaches this test's log collector so that it doesn't keep listening
-    	// after testing is done.
-    	sttLogger.detachAppender(appender);
+    	// Try-catch ensures the log collector detaches.
+    	try {
+    		// Ensures that the endpoint called returns the fakeJSON.
+        	mockServer.expect(requestTo("https://api.openai.com/v1/audio/transcriptions"))
+        		.andExpect(method(HttpMethod.POST))
+        		.andRespond(withSuccess(fakeJson, MediaType.APPLICATION_JSON));
+        	
+        	sttService.transcribe(fakeAudio);
+        	
+        	// appender contains all the logs that was captured and lets us process
+        	// the request. We check whether the logs contain the input & output needed.
+        	boolean loggedSuccess = appender.list.stream()
+        			.anyMatch(event -> event.getFormattedMessage().contains("inputTokens=10")
+        					&& event.getFormattedMessage().contains("outputTokens=5"));
+        	assertTrue(loggedSuccess, "Expected a log entry recording token usage on success");
+        		
+        	// Ensures the mock server receives the request. It would fail
+            // if SttService never called the RestClient.
+            mockServer.verify();
+    	} finally {
+    		// Detaches this test's log collector so that it doesn't keep listening
+        	// after testing is done.
+        	sttLogger.detachAppender(appender);
+    	}
     };
     
     
@@ -112,8 +115,8 @@ public class SttServiceTest {
     	// Assert 1: SttService parsed the API response correctly, ensuring
     	// both the text and the input & output tokens are correct.
         assertEquals("I'm using the API", response.text());
-        assertEquals(10, response.usage().openAI_inputTokens());
-        assertEquals(5, response.usage().openAI_outputTokens());
+        assertEquals(10, response.usage().inputTokens());
+        assertEquals(5, response.usage().outputTokens());
         
         // Assert 2: Ensures TokenStatsService receives the correct
         // amount of tokens and outputs the correct amount.

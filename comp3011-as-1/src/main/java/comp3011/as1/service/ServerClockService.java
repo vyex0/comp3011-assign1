@@ -11,8 +11,12 @@ public class ServerClockService {
 	// final prevents reassignment of the time.
 	private final Instant startTime = Instant.now();
 	
-	// Get Method
+	// Get Methods
 	public Instant getStartTime() {
 		return startTime;
+	};
+	
+	public Instant getUtcNow() {
+		return Instant.now();
 	};
 }

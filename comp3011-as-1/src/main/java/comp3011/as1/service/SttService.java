@@ -39,6 +39,11 @@ public class SttService {
 	public TranscriptionResponse transcribe (MultipartFile audio) throws IOException {
 		String filename = audio.getOriginalFilename();
 		
+		// In case the filename is NULL
+		if (filename == null || filename.isBlank()) {
+			filename = "recording.webm";
+		};
+		
 		// Logs that the STT request was received and show the filename.
 		log.info("STT request received: filename={}", filename);
 		
@@ -66,12 +71,12 @@ public class SttService {
 				.body(TranscriptionResponse.class);
 		
 		// Updates the global stats counter after a successful call.
-		this.tokenStatsService.addInputTokens(response.usage().openAI_inputTokens());
-		this.tokenStatsService.addOutputTokens(response.usage().openAI_outputTokens());
+		this.tokenStatsService.addInputTokens(response.usage().inputTokens());
+		this.tokenStatsService.addOutputTokens(response.usage().outputTokens());
 		
 		// Logs that the STT response was retrieved and shows the input/output tokens.
 		log.info("STT request succeeded: inputTokens={}, outputTokens={}",
-				response.usage().openAI_inputTokens(), response.usage().openAI_outputTokens());
+				response.usage().inputTokens(), response.usage().outputTokens());
 		
 		return response;
 	}

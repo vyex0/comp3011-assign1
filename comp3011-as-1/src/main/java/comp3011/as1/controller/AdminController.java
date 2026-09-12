@@ -44,7 +44,7 @@ public class AdminController {
 		// Get the server start time using ServerClockService service, the utcTime,
 		// and calculates the server uptime until the current second.
 		Instant start = serverClockService.getStartTime();
-		Instant utcNow = Instant.now();
+		Instant utcNow = serverClockService.getUtcNow();
 		double seconds = Duration.between(start, utcNow).toMillis() / 1000.0;
 		
 		// Builds the response in the form of UptimeResponse.
@@ -78,14 +78,14 @@ public class AdminController {
 		// is already called then returns HTTP status CONFLICT: 409.
 		if (!shutdownStateService.tryBeginShutdown()) {
 			ErrorResponse error = new ErrorResponse(
-					Instant.now().toString(),
+					serverClockService.getUtcNow().toString(),
 					409,
 					"Conflict",
 					"Graceful shutdown is already in progress.",
 					"/api/v1/admin/shutdown"
 					);
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-		};
+		}
 		
 		// Builds the response in the form of ShutdownResponse.
 		ShutdownResponse response = new ShutdownResponse("Graceful shutdown requested.");

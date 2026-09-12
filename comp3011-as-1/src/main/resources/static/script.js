@@ -27,7 +27,16 @@ async function startRecording () {
 	// it is used to capture the user's audio input. Ensures the audio
 	// has the audio/webm mimeType format and stores the audio chunks into
 	// the empty audioChunks array.
-	recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+	try {
+		recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+	} catch(error) {
+		document.getElementById("status").textContent =
+			"Recording isn't supported in this browser. Please try Chrome or Firefox.";
+		stream.getTracks().forEach(track => track.stop());
+		document.getElementById("startBtn").disabled = false;
+		document.getElementById("stopBtn").disabled = true;
+		return;
+	}
 	audioChunks = [];
 	
 	// Whenever recorder has a piece of audio available, run this
@@ -64,6 +73,7 @@ async function startRecording () {
 				document.getElementById("transcription").textContent = "";
 				document.getElementById("status").textContent = 
 					"Transcription failed: " + (data.message || "please try again.");
+				document.getElementById("startBtn").disabled = false;
 				return;
 			};
 			
@@ -71,11 +81,13 @@ async function startRecording () {
 			// application is ready for a new recording without page reload.
 			document.getElementById("transcription").textContent = data.text;
 			document.getElementById("status").textContent = "Not recording";
+			document.getElementById("startBtn").disabled = false;
 		} catch(error) {
 			// fetch itself threw: server unreachable, connection dropped.
 			document.getElementById("transcription").textContent = "";
 			document.getElementById("status").textContent = 
 				"Network error: Couldn't reach the server. Please try again.";
+			document.getElementById("startBtn").disabled = false;
 		};
 	};
 	
@@ -98,8 +110,7 @@ function stopRecording () {
 	document.getElementById("recIndicator").classList.remove("active");
 	document.getElementById("status").textContent = "Stopped, transcribing...";
 	
-	// Reverse of the state change made when recording started.
-	document.getElementById("startBtn").disabled = false;
+	// startBtn stays disabled until current transcription finishes.
 	document.getElementById("stopBtn").disabled = true;
 };
 

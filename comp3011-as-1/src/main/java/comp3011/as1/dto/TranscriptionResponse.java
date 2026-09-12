@@ -8,9 +8,9 @@ public record TranscriptionResponse (
 ) {
 	public record Usage (
 		@JsonProperty("input_tokens")
-		long openAI_inputTokens,
+		long inputTokens,
 		
 		@JsonProperty("output_tokens")
-		long openAI_outputTokens
+		long outputTokens
 	) {}
 }

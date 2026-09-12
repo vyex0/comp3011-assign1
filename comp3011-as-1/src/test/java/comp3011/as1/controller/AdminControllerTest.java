@@ -40,14 +40,18 @@ public class AdminControllerTest {
     	// Response from serverClockService is always fixed to
     	// 2026-09-01T00:00:00Z
     	Instant fixedStart = Instant.parse("2026-09-01T00:00:00Z");
+    	Instant fixedNow = Instant.parse("2026-09-01T01:00:00Z"); // One hour later
+    	
     	when(serverClockService.getStartTime()).thenReturn(fixedStart);
+    	when(serverClockService.getUtcNow()).thenReturn(fixedNow);
     	
     	// Simulates a HTTP request through the AdminController so 
     	// serverClockService can be called and response is posted.
     	mockMvc.perform(get("/api/v1/admin/uptime"))
     		.andExpect(status().isOk())
     		.andExpect(jsonPath("$.utcServerStart").value(fixedStart.toString()))
-    		.andExpect(jsonPath("$.serverUptimeSeconds").isNumber());
+    		.andExpect(jsonPath("$.utcNow").value(fixedNow.toString()))
+    		.andExpect(jsonPath("$.serverUptimeSeconds").value(3600.0));
     };
     
     // Tests the failure of the uptime endpoint when the serverClockService
@@ -117,6 +121,7 @@ public class AdminControllerTest {
     @Test
     void shutdownReturns409WhenAlreadyInProgress() throws Exception {
     	when(shutdownStateService.tryBeginShutdown()).thenReturn(false);
+    	when(serverClockService.getUtcNow()).thenReturn(Instant.parse("2026-09-01T00:00:00Z"));
         
         mockMvc.perform(post("/api/v1/admin/shutdown"))
         	.andExpect(status().isConflict())

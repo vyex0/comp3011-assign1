@@ -1,9 +1,9 @@
 package comp3011.as1.controller;
 
 import comp3011.as1.dto.ErrorResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -13,7 +13,6 @@ import java.time.Instant;
 // same error response shape required by the YAML file.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	
 	// Calls the following function whenever an error occurs: ex is the actual exception
 	// that occurs, we use the ex.getMessage() to get the error message. And request is
 	// used to give us information about the HTTP request that caused the error, and we
