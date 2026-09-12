@@ -32,7 +32,6 @@ import comp3011.as1.service.SttService;
 // 200+ real concurrent HTTP requests to the running application.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ConcurrencyLoadTest {
-	
 	// Spring puts the application's port number into this variable
 	@LocalServerPort
     private int port;
@@ -68,10 +67,10 @@ public class ConcurrencyLoadTest {
         	
         	// Creates a fake file containing the filename 'test.webm' and add
         	// some fake bytes content, and attach it to the MultipartFile body.
-        	ByteArrayResource audio = new ByteArrayResource("fake audio bytes".getBytes()) {
+        	ByteArrayResource fakeAudio = new ByteArrayResource("fake audio bytes".getBytes()) {
         		@Override public String getFilename() { return "test.webm"; }
         	};
-        	body.add("audio", audio);
+        	body.add("audio", fakeAudio);
         	
         	// Combines the body + the headers as a complete HTTP request to send.
         	HttpHeaders headers = new HttpHeaders();
@@ -81,7 +80,7 @@ public class ConcurrencyLoadTest {
             return restTemplate.postForEntity(url, request, String.class);
         };
         
-        // An array of virtual threads rather than platform threads, mimicking 500 
+        // An collection of virtual threads rather than platform threads, mimicking 500 
         // separate clients hitting the server at once. I use virtual threads 
         // because we'll be waiting for a response from OpenAI's API than do some
         // heavy computing, and therefore virtual threads are best for tasks

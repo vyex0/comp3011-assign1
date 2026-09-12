@@ -1,63 +1,101 @@
-// -- Recording the Audio --
 let stream;
 let recorder;
 let audioChunks = [];
 
 async function startRecording () {
-	// Prompts the user's browser permission dialog and returns a 
-	// live audio stream from the user's microphone.
-	stream = await navigator.mediaDevices.getUserMedia({
-		audio:true
-	});
+	try {
+		// Prompts the user's browser for mic permission then store
+		// the mic stream.
+		stream = await navigator.mediaDevices.getUserMedia({
+			audio:true
+		});
+	} catch (error) {
+		// Handles permission denial: no mic found or browser is
+		// blocking mic access. Returns if there's an error.
+		document.getElementById("status").textContent =
+			"Couldn't get access to the microhphone. Please check permissions and try again!";
+		return;
+	};
 	
-	// mimeType is set explicitly so every audio chunk 
-	// and the final blob is audio/webm.
+	// Disables the startBtn so that the user isn't able to click on the
+	// start button again after recording has been started.
+	document.getElementById("startBtn").disabled = true;
+	document.getElementById("stopBtn").disabled = false;
+	
+	// MediaRecorder is the browser API used to record the MediaStream,
+	// it is used to capture the user's audio input. Ensures the audio
+	// has the audio/webm mimeType format and stores the audio chunks into
+	// the empty audioChunks array.
 	recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
 	audioChunks = [];
 	
-	// Fires repeatedly when recording is active, handing the audio
-	// in small pieces rather than all at once
+	// Whenever recorder has a piece of audio available, run this
+	// function so that the audios are stored in audioChunks.
 	recorder.ondataavailable = function(event) {
 		audioChunks.push(event.data);
 	};
 	
-	// Invoked once stopRecording is called.
+	// When the recorder is stopped, run this function so the status can
+	// be updated to no longer recording, the audio chunks are combined,
+	// and audio is attached to the formData.
 	recorder.onstop = async function() {
 		document.getElementById("status").textContent = "Processing transcription...";
 		
-		// Combines all audio chunks to one audio file and
-		// sends it to my own backend STT endpoint.
+		// Combines all the audio chunks into one audio file with mimeType audio/webm
 		const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
 		
+		// Creates the form style data for a HTTP request, and attaches
+		// the audio file to the form.
 		const formData = new FormData();
 		formData.append("audio", audioBlob, "userRecording.webm");
 	
-		const response = await fetch("/stt", {
-			method: "POST",
-			body: formData
-		});
+		// Sends it to my SttService backend and waits for the JSON response.
+		try {
+			const response = await fetch("/stt", {
+				method: "POST",
+				body: formData
+			});
+			
+			if (!response.ok) {
+				// Returns if backend didn't return a successful HTTP status.
+				const errorData = await response.json();
+				document.getElementById("transcription").textContent = "";
+				document.getElementById("status").textContent = 
+					"Transcription failed: " + (errorData.message || "please try again.");
+				return;
+			};
+		} catch(error) {
+			
+		};
+		
 		
 		const data = await response.json();
-		
-		// Displays the transcribed text and resets status, ready for
-		// a new recording without page reload.
+		 
+		// Displays the transcribed text and resets the status, ensuring
+		// application is ready for a new recording without page reload.
 		document.getElementById("transcription").textContent = data.text;
 		document.getElementById("status").textContent = "Not recording";
 	};
 	
-	// Starts recording the user's audio.
+	// Starts recording the user's audio and changes the status to recording.
 	recorder.start();
 	document.getElementById("status").textContent = "Recording...";
 }
 
-// -- Stopped Recording --
 function stopRecording () {
 	recorder.stop();
 	
+	// Stops recording on all of the tracks inside the user's browser,
+	// but since we're only using the audio track, audio track is the only
+	// one being stopped from streaming. Basically release the mic.
 	// Releases the user's mic so the browser's recording
 	// indicator turns off and mic isn't reserved anymore after use. 
 	stream.getTracks().forEach(track => track.stop());
 	
 	document.getElementById("status").textContent = "Stopped, transcribing...";
+	
+	// Reverse of the state change made when recording started.
+	document.getElementById("startBtn").disabled = false;
+	document.getElementById("stopBtn").disabled = true;
 };
 
