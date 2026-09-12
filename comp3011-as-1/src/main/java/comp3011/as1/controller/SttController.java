@@ -11,18 +11,18 @@ import org.springframework.web.multipart.MultipartFile;
 import comp3011.as1.dto.TranscriptionResponse;
 import comp3011.as1.service.SttService;
 
+// Controller that sits between application and SttService, any
+// transcription requests are delegated to the SttService.
 @RestController
 public class SttController {
-	
-	// Delegates the OpenAI call to SttService
 	private final SttService sttService;
 	
 	public SttController (SttService sttService) {
 		this.sttService = sttService;
 	}
 	
-	// Receives the recorded audio file from the browser and return its transcription
-	// and its OpenAI token usage. 
+	// Call the following method when a POST request is made to
+	// the /stt endpoint, with the audio file uploaded along.
 	@PostMapping("/stt")	
 	public TranscriptionResponse transcribe(
 			@RequestParam("audio") MultipartFile audio) throws IOException {

@@ -37,15 +37,15 @@ public class SttService {
 	// Sends one complete recording to OpenAI's transcription API and records token usage.
 	// Called once after the user has finished recording (in script.js).
 	public TranscriptionResponse transcribe (MultipartFile audio) throws IOException {
+		String filename = audio.getOriginalFilename();
+		
 		// Logs that the STT request was received and show the filename.
-		log.info("STT request received: filename={}", audio.getOriginalFilename());
+		log.info("STT request received: filename={}", filename);
 		
 		// OpenAI expects the audio request to be sent as multiform/form-data
 		// and MultipartBodyBuilder helps in constructing that package of information.
 		MultipartBodyBuilder builder = new MultipartBodyBuilder();
 		builder.part("model", "gpt-4o-mini-transcribe"); // Uses the gpt-4o-mini-transcribe model
-		
-		String filename = audio.getOriginalFilename();
 		
 		// Takes the uploaded audio and reads its content into memory as series of bytes,
 		// then wraps the bytes in a resource so Spring treats it as a file.

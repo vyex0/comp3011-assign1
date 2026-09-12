@@ -14,13 +14,20 @@ public class TokenStatsServiceConcurrencyTest {
 	void addInputTokensIsThreadSafeUnderConcurrentUpdates() throws Exception {
 		TokenStatsService tokenStatsService = new TokenStatsService();
 		
-		int threadCount = 250;
+		// Sets the update: 500 threads, each thread does 100 updates,
+		// each update increments the token count by 1.
+		int threadCount = 500;
 		int incrementsPerThread = 100;
 		long amountPerIncrement = 1;
 		
-		// A pool of threads running concurrently on TokenStatsService instance.
-		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		long start = System.currentTimeMillis();
 		
+		// A pool of virtual threads mimicking 500 separate threads hitting the
+		// application all at once. I use virtual threads because we can use
+		// more thread counts and it is much cheaper compared to using platform threads.
+		ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+		
+		// Performs the task 500x100 times.
 		for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
                 for (int j = 0; j < incrementsPerThread; j++) {
@@ -31,15 +38,16 @@ public class TokenStatsServiceConcurrencyTest {
 		
 		executor.shutdown();
 		
-		// Blocks until submitted tasks are finished or 30 seconds has passed,
-		// 30 seconds is the safety net so build doesn't run forever.
-		executor.awaitTermination(30, TimeUnit.SECONDS);
+		// Blocks here until the threads are all finished or when 10 seconds has passed.
+		executor.awaitTermination(10, TimeUnit.SECONDS);
 		
-		// Mathematically exact expected total, if every single increment
-		// was actually counted with none lost.
+		long durationMs = System.currentTimeMillis() - start;
+		
+		// Expected total, if every single increment was actually counted and none are lost.
+		// Ensures the application counted all the increments correctly.
 		long expectedTotal = threadCount * incrementsPerThread * amountPerIncrement;
-		
 		assertEquals(expectedTotal, tokenStatsService.getInputTokens(),
-	            "Lost updates detected - counter is not thread-safe under concurrent access");
+				(tokenStatsService.getInputTokens() - expectedTotal) + " tokens are lost."
+						+ " Request took " + durationMs + "ms");
 	};
 }

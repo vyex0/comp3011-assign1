@@ -3,6 +3,7 @@ let recorder;
 let audioChunks = [];
 
 async function startRecording () {
+	document.getElementById("status").textContent = "Requesting microphone access...";
 	try {
 		// Prompts the user's browser for mic permission then store
 		// the mic stream.
@@ -56,29 +57,31 @@ async function startRecording () {
 				body: formData
 			});
 			
+			const data = await response.json();
+			
 			if (!response.ok) {
 				// Returns if backend didn't return a successful HTTP status.
-				const errorData = await response.json();
 				document.getElementById("transcription").textContent = "";
 				document.getElementById("status").textContent = 
-					"Transcription failed: " + (errorData.message || "please try again.");
+					"Transcription failed: " + (data.message || "please try again.");
 				return;
 			};
-		} catch(error) {
 			
+			// Displays the transcribed text and resets the status, ensuring
+			// application is ready for a new recording without page reload.
+			document.getElementById("transcription").textContent = data.text;
+			document.getElementById("status").textContent = "Not recording";
+		} catch(error) {
+			// fetch itself threw: server unreachable, connection dropped.
+			document.getElementById("transcription").textContent = "";
+			document.getElementById("status").textContent = 
+				"Network error: Couldn't reach the server. Please try again.";
 		};
-		
-		
-		const data = await response.json();
-		 
-		// Displays the transcribed text and resets the status, ensuring
-		// application is ready for a new recording without page reload.
-		document.getElementById("transcription").textContent = data.text;
-		document.getElementById("status").textContent = "Not recording";
 	};
 	
 	// Starts recording the user's audio and changes the status to recording.
 	recorder.start();
+	document.getElementById("recIndicator").classList.add("active");
 	document.getElementById("status").textContent = "Recording...";
 }
 
@@ -92,6 +95,7 @@ function stopRecording () {
 	// indicator turns off and mic isn't reserved anymore after use. 
 	stream.getTracks().forEach(track => track.stop());
 	
+	document.getElementById("recIndicator").classList.remove("active");
 	document.getElementById("status").textContent = "Stopped, transcribing...";
 	
 	// Reverse of the state change made when recording started.

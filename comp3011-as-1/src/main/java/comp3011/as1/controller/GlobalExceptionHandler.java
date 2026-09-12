@@ -9,15 +9,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import java.time.Instant;
 
-// Applies to every controller for the app so it returns the same ErrorResponse
-// shape required by the YAML file.
+// Applies to every Controller for the application so that it returns the
+// same error response shape required by the YAML file.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
+	// Calls the following function whenever an error occurs: ex is the actual exception
+	// that occurs, we use the ex.getMessage() to get the error message. And request is
+	// used to give us information about the HTTP request that caused the error, and we
+	// use it to get the PATH.
 	@ExceptionHandler(Exception.class)
 	public  ResponseEntity<ErrorResponse> handleException(Exception ex, WebRequest request) {
 		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		
+		// Builds the response in the form of ErrorResponse specified in the YAML.
 		ErrorResponse error = new ErrorResponse(
 			Instant.now().toString(),
 			status.value(),
@@ -26,7 +31,7 @@ public class GlobalExceptionHandler {
 			request.getDescription(false).replace("uri=", "")
 		);
 		
-		// returns "500"
+		// Returns HTTP status INTERNAL SERVER ERROR: 500.
 		return ResponseEntity
 				.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(error);

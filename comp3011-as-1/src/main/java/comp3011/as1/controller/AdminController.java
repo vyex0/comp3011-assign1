@@ -19,12 +19,13 @@ import comp3011.as1.service.ServerClockService;
 import comp3011.as1.service.ShutdownStateService;
 import comp3011.as1.service.TokenStatsService;
 
+// The controller responsible for the API routing calls to my server's end point.
+// It receives admin requests and returns the appropriate HTTP responses.
 @RestController
 @RequestMapping("/api")
 public class AdminController {
-	private final ConfigurableApplicationContext context; // Context 
+	private final ConfigurableApplicationContext context; // Spring application's running context 
 	
-	// Services
 	private final TokenStatsService tokenStatsService;
 	private final ShutdownStateService shutdownStateService;
 	private final ServerClockService serverClockService;
@@ -37,42 +38,44 @@ public class AdminController {
 		this.shutdownStateService = shutdownStateService;
 	}
 	
-	// GET methods for each of the specified PATHS from YAML
+	// Get Methods for each of the specified PATHS from the YAML doc.
 	@GetMapping("/v1/admin/uptime")	
 	public ResponseEntity<UptimeResponse> getUptime() {
+		// Get the server start time using ServerClockService service, the utcTime,
+		// and calculates the server uptime until the current second.
 		Instant start = serverClockService.getStartTime();
 		Instant utcNow = Instant.now();
 		double seconds = Duration.between(start, utcNow).toMillis() / 1000.0;
 		
+		// Builds the response in the form of UptimeResponse.
 		UptimeResponse response = new UptimeResponse(
 				start.toString(),
 				utcNow.toString(),
 				seconds
 		);
 
-		// 200: standard success response which matches the YAML specs
+		// Returns HTTP status OK: 200 if successful. 
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping("/v1/global/stats")
 	public ResponseEntity<GlobalStatsResponse> getGlobalStats() {
+		// Calls the tokenStatsService to get the token statistics,
+		// and builds the response in the form of GlobalStatsResponse.
 		GlobalStatsResponse response = new GlobalStatsResponse(
 				tokenStatsService.getInputTokens(),
 				tokenStatsService.getOutputTokens()
 		);
 		
-		// returns "200"
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(response);
+		// Returns HTTP status OK: 200 if successful. 
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
-	// POST methods for specified PATHS from YAML
+	// POST Method for each of the specified PATHS from the YAML doc.
 	@PostMapping("/v1/admin/shutdown")
 	public ResponseEntity<?> shutdown() {
-		
-		// Rejects a second/concurrent shutdown request with 409 per
-		// the YAML spec.
+		// Checks whether the shutdown is already in progress, if shutdown
+		// is already called then returns HTTP status CONFLICT: 409.
 		if (!shutdownStateService.tryBeginShutdown()) {
 			ErrorResponse error = new ErrorResponse(
 					Instant.now().toString(),
@@ -84,11 +87,12 @@ public class AdminController {
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
 		};
 		
+		// Builds the response in the form of ShutdownResponse.
 		ShutdownResponse response = new ShutdownResponse("Graceful shutdown requested.");
 
-		// Context is closed on a separate thread after a short delay because
-		// the process could terminate before the method's own HTTP response has
-		// finished being sent back to the user.
+		
+		// Context is closed on a separate thread after a short delay (500 ms) to ensure
+		// the HTTP response is sent back to the user first before context is fully terminated.
 		new Thread(() -> {
 			try {
 				Thread.sleep(500);
@@ -98,8 +102,7 @@ public class AdminController {
 			context.close();
 		}).start();
 		
-		// 202: request is accepted and shutdown process is in progress
-		// but not yet completed which matches the YAML's specs.
+		// Returns HTTP status ACCEPTED: 202 if successful. 
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
 	}
 }

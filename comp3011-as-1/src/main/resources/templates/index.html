@@ -12,17 +12,18 @@
 	
 	<div class="container">
 		
-		<!-- Recording Section -->
+		<!-------------- Recording Section -------------->
 		<div class="container">
-		    <p id="status">Not recording</p>
-		    <button onclick="startRecording()">Start Recording</button>
-		    <button onclick="stopRecording()" disabled>Stop Recording</button>
+			<div id="recIndicator" class="rec-indicator" aria-hidden="true"></div>
+		    <p id="status" aria-live="polite">Not recording</p>
+		    <button id="startBtn" onclick="startRecording()">Start Recording</button>
+		    <button id="stopBtn" onclick="stopRecording()" disabled>Stop Recording</button>
 		</div>
 		
-		<!-- Result Section -->
+		<!-------------- Result Section -------------->
 		<div class="container">
 			<h3>Result Here</h3>
-			<p id="transcription"></p>
+			<p id="transcription" aria-live="polite"></p>
 		</div>
 	</div>
 	
